@@ -61,14 +61,10 @@ def launch_models(cfg : DictConfig, pool,NN: nn.Module, csv_info : pd.DataFrame,
     del result
                 
     returns = torch.cat(returns)
-    #pool.terminate()
-    #pool.close()
     mask = torch.tensor(mask)
-    # plot_tree(last_n, last_sel, f"figs/time-{int(time.time())}.png",sum(rewards[-1]))
     return open_nodes, returns, nodes, rewards, selecteds, mask
 
 def __make_and_optimize(it, seed, NN, f, baseline_gap=None,baseline_nodes=None):
-    #print("started")
     torch.manual_seed(seed)
     nodesel = CustomNodeSelector(NN, "cpu", 1.0)
     if isinstance(f, str):
@@ -92,13 +88,10 @@ def __make_and_optimize(it, seed, NN, f, baseline_gap=None,baseline_nodes=None):
         model.setRealParam("limits/time", 45)
         model.hideOutput()
         model.optimize()
-    #print("done snd")
 
     op, ret, no, r, select = get_data(nodesel, model, baseline_gap=baseline_gap,baseline_nodes=baseline_nodes)
     gap = model.getGap()
     model.freeProb()
-    # op, ret, no, r, select
-    #no = [to_dict(n) for n in no]
     print("done converting, starting to send to main process")
     return (op, ret, no, r, select, gap)
 

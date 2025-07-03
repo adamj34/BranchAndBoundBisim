@@ -116,6 +116,7 @@ class CustomNodeSelector(Nodesel):
         self.step = 0
         i=250
         self.mods = num_in_range([(0,i), (i,1000)],[1,10])
+        
     @torch.no_grad()
     def get_tree(self, node, info : Dict[str, Any], var_hist: np.ndarray, slack_hist : np.ndarray,power=0.5):
         #t0 = time()
@@ -173,11 +174,11 @@ class CustomNodeSelector(Nodesel):
             return {"selnode":self.model.getBestboundNode()}
         #print("features",time()-t0)
         open_node_ids = [n.getNumber() for n in open_nodes]
-        if self.step % 50 == 0:
+        if self.step % 50 == 0:  # prunes nodes from the internal tree structure
             prune_elements(self.tree,open_node_ids)
         #self.tree.prune_closed_branches(open_node_ids)
         
-        
+        # proper node selection happens here !!! 
         #t0 = time()
         trees = TreeList([self.tree]) # type: ignore
         #self.comb_model.eval()

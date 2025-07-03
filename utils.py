@@ -39,7 +39,7 @@ def get_data(nodesel, model, baseline_gap=None, baseline_nodes=None):
     Problemname: {model.getProbName()} {datetime.now().strftime("%H:%M:%S")} {model.getNNodes()}
            Baseline               NN
     GAP   {baseline_gap}    {gap}
-    Nodes {baseline_nodes}    {len(open_nodes)}
+    Nodes {baseline_nodes}  {len(open_nodes)}
     ================================================
     """
     print(text)

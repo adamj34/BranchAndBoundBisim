@@ -70,6 +70,7 @@ dependencies:
   - llvm-openmp=14.0.6=h9e868ea_0
   - lz4-c=1.9.4=h6a678d5_0
   - markupsafe=2.1.1=py310h7f8727e_0
+  - matplotlib=3.10.0=py310h06a4308_0
   - metis=5.1.0=hf484d3e_4
   - mkl=2023.1.0=h6d00ec8_46342
   - mkl-service=2.4.0=py310h5eee18b_1
@@ -99,6 +100,7 @@ dependencies:
   - requests=2.29.0=py310h06a4308_0
   - scip=8.0.3=hd64c6ca_1
   - scotch=6.0.9=hb2e6521_2
+  - seaborn=0.13.2=py310h06a4308_2
   - setuptools=67.8.0=py310h06a4308_0
   - sqlite=3.41.2=h5eee18b_0
   - sympy=1.11.1=py310h06a4308_0
@@ -109,8 +111,10 @@ dependencies:
   - torchvision=0.15.2=py310_cu117
   - typing_extensions=4.6.3=py310h06a4308_0
   - tzdata=2023c=h04d1e81_0
+  - tqdm=4.67.1=py310h2f386ee_0
   - unixodbc=2.3.11=h5eee18b_0
   - urllib3=1.26.16=py310h06a4308_0
+  - wandb=0.16.6=pyhd8ed1ab_1
   - wheel=0.38.4=py310h06a4308_0
   - xz=5.4.2=h5eee18b_0
   - zlib=1.2.13=h166bdaf_4
@@ -156,7 +160,7 @@ dependencies:
       - nnpy-bundle==1.4.2.post1
       - notebook==6.5.4
       - numba==0.57.1
-      - numpy==1.24.4
+      - numpy==1.24.0
       - nvidia-ml-py==11.525.112
       - oauthlib==3.2.2
       - opencensus==0.11.2

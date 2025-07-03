@@ -11,33 +11,6 @@ warnings.simplefilter('ignore', category=NumbaDeprecationWarning)
 warnings.simplefilter('ignore', category=NumbaPendingDeprecationWarning)
 import numpy as  np
 
-class WhitenTransform(nn.Module):
-    def __init__(self, size, ema_cov=0.90,ema_mean=0.90) -> None:
-        super().__init__()
-        # self.cov = torch.eye(size)
-        self.register_buffer("cov",torch.eye(size))
-        #self.mean = torch.zeros(size)
-        self.register_buffer("mean",torch.zeros(size))
-        self.ema_cov=ema_cov
-        self.ema_mean = ema_mean
-        self.size=size
-    def cov_shrinkage(self,cov,shrinkage):
-        return (1-shrinkage)*cov + shrinkage*torch.trace(cov)/cov.shape[0]*torch.eye(cov.shape[0])
-    
-    def forward(self, x):
-        with torch.no_grad():
-            if self.training:
-            
-                cov = torch.cov(x.T)
-                #print(cov)
-                self.cov = self.ema_cov*self.cov + (1-self.ema_cov)*cov
-                self.mean = self.ema_mean*self.mean + (1-self.ema_mean)*torch.mean(x,0)
-            # chol = torch.linalg.cholesky(torch.linalg.inv(self.cov+torch.eye(self.size)*0.01))
-            L,Q = torch.linalg.eigh(self.cov+0.01*torch.eye(self.size).to(x.device))
-        chol = torch.diag(L**(-1/2)) @ Q.T
-        #print(chol)
-        return torch.mm((x-self.mean),chol)
-
 @torch.jit.script
 def normfun(x, mean, std):
     return (x-mean) / (std+0.001), x.mean(0), x.std(0)
@@ -91,11 +64,10 @@ class FeatureEmbedder(nn.Module):
             #nn.BatchNorm1d(feature_in,affine=False),
             SlowNorm(feature_in),
             #Feature_Transform(5,6),
-            #WhitenTransform(feature_in),
             nn.Linear(feature_in,#*(2*5+1), 
                       feature_embed_out),
 
-             )
+            )
         layers = []
         
         for i in range(n_layers):
@@ -137,10 +109,6 @@ def mapping(probs, steps):
     values = torch.cat([iout,steps[i]],-1)
     weighted_sum =weight*values
     return weighted_sum.sum(-1,keepdim=True)
-
-class SwiGLU(nn.Module):
-    def forward(self, x):
-        return swiglu(x)
 
 @njit(parallel=True)
 def transform_ind(label ,neighbors):
@@ -190,7 +158,6 @@ class CombineEmbedder(nn.Module):
         self.node_emb = nn.Sequential(
             #nn.LayerNorm(node_emb_sz,elementwise_affine=False),
             nn.Linear(node_emb_sz,node_emb_sz),
-            #SwiGLU(),
             nn.LeakyReLU()
             )
         self.depth = depth
@@ -198,21 +165,10 @@ class CombineEmbedder(nn.Module):
         self.scale_steps = (1-scale_features)/self.depth
         self.feat_emb = FeatureEmbedder(self.feat_emb_sz,node_emb_sz,scale=scale_features,n_layers=n_layers)
         self.weight = nn.Sequential(
-            #nn.LayerNorm(node_emb_sz),
-            #nn.Linear(node_emb_sz,node_emb_sz),
-            #SwiGLU(),
-            #nn.LeakyReLU(),
-            nn.Linear(self.node_emb_sz,1,bias=False),
-            #nn.Tanh()
+            nn.Linear(self.node_emb_sz,1,bias=False)
         )
         self.value_head = nn.Sequential(
-            #FeatureEmbedder(self.feat_emb_sz,node_emb_sz,scale=1),
-            #nn.LayerNorm(node_emb_sz),
-            #nn.Linear(node_emb_sz,node_emb_sz),
-            #SwiGLU(),
-            #nn.LeakyReLU(),
-            nn.Linear(node_emb_sz,1, bias=False),
-            #nn.Tanh()
+            nn.Linear(node_emb_sz,1, bias=False)
         )
         self.rezero_param = nn.Parameter(torch.zeros(1))
         #torch.nn.init.normal_(self.weight.weight, 0,0.01)
@@ -260,7 +216,6 @@ class CombineEmbedder(nn.Module):
         w = self.weight(x)#torch.tanh(self.weight(x)/10)*10 # this is approximately f(x) = x for small x
         #f = inital_feat[uids]
         v  = self.value_head(x.detach())
-        #v  = mapping(self.value_head(x),self.codebook)
         return x, w, v
 
 
